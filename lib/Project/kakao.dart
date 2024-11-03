@@ -41,8 +41,7 @@ class _HttpApp extends State<HttpApp> {
     data = []; // 데이터 리스트 초기화.
     // 스크롤 리스너 추가 : 스크롤이 끝에 도달하면 다음 페이지 데이터 요청.
     _scrollController.addListener(() {
-      if (_scrollController.offset >=
-              _scrollController.position.maxScrollExtent &&
+      if (_scrollController.offset >= _scrollController.position.maxScrollExtent &&
           !_scrollController.position.outOfRange) {
         page++; // 페이지 번호 증가.
         getJSONData(); // 다음 페이지 데이터 요청.
@@ -52,8 +51,7 @@ class _HttpApp extends State<HttpApp> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        //AppBar에 검색 입력 필드 추가.
+      appBar: AppBar( //AppBar에 검색 입력 필드 추가.
         title: TextField(
           controller: _editingController, // 입력 컨트롤러 설정.
           style: const TextStyle(color: Colors.blueAccent), // 텍스트 색상 설정.
@@ -71,8 +69,7 @@ class _HttpApp extends State<HttpApp> {
                 )
               : ListView.builder(
                   itemCount: data!.length, // 데이터 개수 설정.
-                  itemBuilder: (context, index) {
-                    // ListView.builder를 사용하여 데이터 리스트 생성.
+                  itemBuilder: (context, index) { // ListView.builder를 사용하여 데이터 리스트 생성.
                     return Card(
                       child: Row(
                         children: <Widget>[
@@ -91,10 +88,8 @@ class _HttpApp extends State<HttpApp> {
                                 Text(data![index]['title'].toString(),
                                     textAlign: TextAlign.center),
                                 // 저자, 가격, 판매 상태 표시.
-                                Text(
-                                    '저자 : ${data![index]['authors'].toString()}'),
-                                Text(
-                                    '판매가 : ${data![index]['sale_price'].toString()}'),
+                                Text('저자 : ${data![index]['authors'].toString()}'),
+                                Text('판매가 : ${data![index]['sale_price'].toString()}'),
                                 Text('정가 : ${data![index]['price'].toString()}'),
                                 Text('판매중 : ${data![index]['status'].toString()}'),
                                 Text('출판날짜 : ${data![index]['datetime'].toString()}'),
@@ -106,8 +101,7 @@ class _HttpApp extends State<HttpApp> {
                 ),
         ),),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          //FAB 클릭 시 페이지 초기화 및 데이터 새로고침.
+        onPressed: () { //FAB 클릭 시 페이지 초기화 및 데이터 새로고침.
           page = 1; // 페이지 번호 초기화.
           data!.clear(); // 데이터 리스트 초기화.
           getJSONData(); // 새로운 데이터 요청.
@@ -116,13 +110,11 @@ class _HttpApp extends State<HttpApp> {
       ),);
   }
 
-  Future<void> getJSONData() async {
-    // kakao API에서 데이터 요청.
+  Future<void> getJSONData() async { // kakao API에서 데이터 요청.
     var url =
         'http://dapi.kakao.com/v3/search/book?target=title&page='
         '$page&query=${Uri.encodeQueryComponent(_editingController.text)}';
-    try {
-      //http get 요청.
+    try { //http get 요청.
       var response = await http.get(Uri.parse(url), headers: {
         "Authorization": "KakaoAK b2b527c43a994ae411728106061e1fc1" // 카카오 API키 설정.
       });
