@@ -66,8 +66,9 @@ class MyApp extends StatelessWidget {
                 return Center(
                   child: Text(
                     'data : ${snapshot.data}', // 수신된 데이터 표시
-                    style: const TextStyle(fontSize: 30.0 // 글자 크기 설정.
-                        ),
+                    style: const TextStyle(
+                        fontSize: 30.0 // 글자 크기 설정.
+                    ),
                   ),
                 );
               }),
