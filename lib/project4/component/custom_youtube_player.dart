@@ -41,7 +41,7 @@ class _CustomYoutubePlayerState extends State<CustomYoutubePlayer> {
       crossAxisAlignment: CrossAxisAlignment.stretch, // 자식 위젯을 부모 위젯의 너비에 맞춤
       children: [
         // 유튜브 플레이어 위젯
-        Flexible(
+        Flexible( // 자식 위젯에게 남은 공간을 비례배분 또는 유연하게 크기를 조절
           child: YoutubePlayer(
             controller: controller!, // 설정한 컨트롤러 사용
             showVideoProgressIndicator: true, // 동영상 진행 표시기 표시
