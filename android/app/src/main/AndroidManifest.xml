@@ -1,4 +1,6 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"><![CDATA[
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.flutter_lab_202116013">
+    <![CDATA[
     ]]><application
         android:label="flutter_lab_202116013"
         android:name="${applicationName}"
