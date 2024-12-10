@@ -227,7 +227,7 @@ class _AuthWidgetState extends State<AuthWidget> {
     ];
   }
 
-  @overridetj
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
