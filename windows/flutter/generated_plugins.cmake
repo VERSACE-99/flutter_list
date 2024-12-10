@@ -3,8 +3,11 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+<<<<<<< HEAD
   firebase_auth
   firebase_core
+=======
+>>>>>>> 9ca7fd6f18c038141633fab61e6adb415a45ee27
   flutter_inappwebview_windows
 )
 
