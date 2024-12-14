@@ -247,10 +247,7 @@ class _AuthWidgetState extends State<AuthWidget> {
     ];
   }
 
-<<<<<<< HEAD
-=======
   // 화면 빌드
->>>>>>> 09968a3b4fc6fbb06f7c296cdafe440859c6efaf
   @override
   Widget build(BuildContext context) {
     return Scaffold(

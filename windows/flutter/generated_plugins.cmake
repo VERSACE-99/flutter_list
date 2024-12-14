@@ -3,16 +3,11 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
-<<<<<<< HEAD
   cloud_firestore
   file_selector_windows
   firebase_auth
   firebase_core
   firebase_storage
-=======
-  firebase_auth
-  firebase_core
->>>>>>> 09968a3b4fc6fbb06f7c296cdafe440859c6efaf
   flutter_inappwebview_windows
 )
 
