@@ -2,14 +2,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:cloud_firestore/cloud_firestore.dart'; // Firebase Firestore 사용
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_lab_202116013/firebase_options.dart';
 
-
-// Open-Meteo API Base URL
 const String openMeteoApiUrl = 'https://api.open-meteo.com/v1/forecast';
 
 void showToast(String msg) {
@@ -69,24 +66,19 @@ class _AuthWidgetState extends State<AuthWidget> {
         } else {
           showToast('이메일 인증이 필요합니다.');
         }
-        return value;
       });
-    } on FirebaseException catch (e) {
-      if (e.code == 'user-not-found') {
-        showToast('사용자를 찾을 수 없습니다.');
-      } else if (e.code == 'wrong-password') {
-        showToast('비밀번호가 잘못되었습니다.');
-      } else {
-        print(e.code);
+    } on FirebaseAuthException catch (e) {
+      switch (e.code) {
+        case 'user-not-found':
+          showToast('사용자를 찾을 수 없습니다.');
+          break;
+        case 'wrong-password':
+          showToast('비밀번호가 잘못되었습니다.');
+          break;
+        default:
+          showToast('알 수 없는 오류가 발생했습니다.');
       }
     }
-  }
-
-  signOut() async {
-    await FirebaseAuth.instance.signOut();
-    setState(() {
-      isInput = true;
-    });
   }
 
   signUp() async {
@@ -94,25 +86,23 @@ class _AuthWidgetState extends State<AuthWidget> {
       await FirebaseAuth.instance
           .createUserWithEmailAndPassword(email: email, password: password)
           .then((value) {
-        if (value.user!.email != null) {
-          FirebaseAuth.instance.currentUser?.sendEmailVerification();
-          setState(() {
-            isInput = false;
-          });
-        }
-        return value;
+        value.user?.sendEmailVerification(); // Simplified null check
+        setState(() {
+          isInput = true; // Changed to true to allow user to verify email
+        });
+        showToast('이메일 인증 링크를 확인하세요.');
       });
-    } on FirebaseException catch (e) {
-      if (e.code == 'weak-password') {
-        showToast('비밀번호가 너무 약합니다.');
-      } else if (e.code == 'email-already-in-use') {
-        showToast('이미 등록된 이메일입니다.');
-      } else {
-        showToast('알 수 없는 오류가 발생했습니다.');
-        print(e.code);
+    } on FirebaseAuthException catch (e) {
+      switch (e.code) {
+        case 'weak-password':
+          showToast('비밀번호가 너무 약합니다.');
+          break;
+        case 'email-already-in-use':
+          showToast('이미 등록된 이메일입니다.');
+          break;
+        default:
+          showToast('알 수 없는 오류가 발생했습니다.');
       }
-    } catch (e) {
-      print(e.toString());
     }
   }
 
@@ -123,44 +113,40 @@ class _AuthWidgetState extends State<AuthWidget> {
         style: TextStyle(
           color: Colors.indigo,
           fontWeight: FontWeight.bold,
-          fontSize: 20,
+          fontSize: 24,
         ),
         textAlign: TextAlign.center,
       ),
-      Form(
-        key: _formkey,
-        child: Column(
-          children: [
-            TextFormField(
-              decoration: InputDecoration(labelText: '이메일'),
-              validator: (value) {
-                if (value?.isEmpty ?? false) {
-                  return '이메일을 입력하세요';
-                }
-                return null;
-              },
-              onSaved: (String? value) {
-                email = value ?? "";
-              },
+      SizedBox(height: 20),
+      Card(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.0),
+        ),
+        elevation: 8.0,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Form(
+            key: _formkey,
+            child: Column(
+              children: [
+                TextFormField(
+                  decoration: InputDecoration(labelText: '이메일'),
+                  validator: (value) => value?.isEmpty == true ? '이메일을 입력하세요' : null,
+                  onSaved: (value) => email = value ?? "",
+                ),
+                SizedBox(height: 16),
+                TextFormField(
+                  decoration: InputDecoration(labelText: '비밀번호'),
+                  obscureText: true,
+                  validator: (value) => value?.isEmpty == true ? '비밀번호를 입력하세요' : null,
+                  onSaved: (value) => password = value ?? "",
+                ),
+              ],
             ),
-            TextFormField(
-              decoration: InputDecoration(
-                labelText: '비밀번호',
-              ),
-              obscureText: true,
-              validator: (value) {
-                if (value?.isEmpty ?? false) {
-                  return '비밀번호를 입력하세요';
-                }
-                return null;
-              },
-              onSaved: (String? value) {
-                password = value ?? "";
-              },
-            ),
-          ],
+          ),
         ),
       ),
+      SizedBox(height: 20),
       ElevatedButton(
         onPressed: () {
           if (_formkey.currentState?.validate() ?? false) {
@@ -173,28 +159,30 @@ class _AuthWidgetState extends State<AuthWidget> {
           }
         },
         child: Text(isSignIn ? "로그인" : "회원가입"),
+        style: ElevatedButton.styleFrom(
+          padding: EdgeInsets.symmetric(vertical: 12, horizontal: 32),
+        ),
       ),
+      SizedBox(height: 10),
       RichText(
         textAlign: TextAlign.right,
         text: TextSpan(
-          style: Theme
-              .of(context)
-              .textTheme
-              .bodyLarge,
+          style: Theme.of(context).textTheme.bodyLarge,
           children: [
             TextSpan(
-                text: isSignIn ? "회원가입" : "로그인",
-                style: TextStyle(
-                  color: Colors.blue,
-                  fontWeight: FontWeight.bold,
-                  decoration: TextDecoration.underline,
-                ),
-                recognizer: TapGestureRecognizer()
-                  ..onTap = () {
-                    setState(() {
-                      isSignIn = !isSignIn;
-                    });
-                  }),
+              text: isSignIn ? "회원가입" : "로그인",
+              style: TextStyle(
+                color: Colors.blue,
+                fontWeight: FontWeight.bold,
+                decoration: TextDecoration.underline,
+              ),
+              recognizer: TapGestureRecognizer()
+                ..onTap = () {
+                  setState(() {
+                    isSignIn = !isSignIn;
+                  });
+                },
+            ),
           ],
         ),
       ),
@@ -218,21 +206,17 @@ class _AuthWidgetState extends State<AuthWidget> {
         ),
       ),
     )
-        : WeatherHomeScreen(signOut: signOut);
+        : WeatherHomeScreen(); // Removed signOut parameter
   }
 }
 
 class WeatherHomeScreen extends StatefulWidget {
-  final VoidCallback signOut;
-
-  WeatherHomeScreen({required this.signOut});
 
   @override
-  State<WeatherHomeScreen> createState() => _WeatherHomeScreenState();
+  _WeatherHomeScreenState createState() => _WeatherHomeScreenState();
 }
 
 class _WeatherHomeScreenState extends State<WeatherHomeScreen> {
-  List<String> favoriteCities = [];
   final List<Map<String, dynamic>> provinces = [
     {'name': '서울', 'lat': 37.5665, 'lon': 126.9780},
     {'name': '부산', 'lat': 35.1796, 'lon': 129.0756},
@@ -242,11 +226,14 @@ class _WeatherHomeScreenState extends State<WeatherHomeScreen> {
     {'name': '대전', 'lat': 36.3504, 'lon': 127.3845},
     {'name': '울산', 'lat': 35.5384, 'lon': 129.3114},
     {'name': '세종', 'lat': 36.4800, 'lon': 127.2890},
+    {'name': '제주', 'lat': 33.4996, 'lon': 126.5312},
+    {'name': '독도', 'lat': 37.239, 'lon': 131.865},
   ];
+
 
   Future<Map<String, dynamic>> fetchWeather(double lat, double lon) async {
     final url = Uri.parse(
-        '$openMeteoApiUrl?latitude=$lat&longitude=$lon&current_weather=true');
+        '$openMeteoApiUrl?latitude=$lat&longitude=$lon&current_weather=true&daily=temperature_2m_max,temperature_2m_min&hourly=apparent_temperature&timezone=auto');
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
@@ -256,73 +243,137 @@ class _WeatherHomeScreenState extends State<WeatherHomeScreen> {
     }
   }
 
+  IconData mapWeatherCodeToIcon(int code) {
+    if (code == 0) return Icons.wb_sunny; // 맑음
+    if (code <= 3) return Icons.cloud; // 구름
+    if (code <= 48) return Icons.foggy; // 안개
+    if (code <= 57) return Icons.grain; // 이슬비
+    if (code <= 67) return Icons.umbrella; // 비
+    if (code <= 77) return Icons.ac_unit; // 눈
+    return Icons.help_outline; // 알 수 없음
+  }
+
+  void showWeatherDialog(
+      BuildContext context, String cityName, Map<String, dynamic> weatherData) {
+    final currentWeather = weatherData['current_weather'] ?? {};
+    final dailyWeather = weatherData['daily'] ?? {};
+    final hourlyWeather = weatherData['hourly'] ?? {};
+
+    final temperature = currentWeather['temperature']?.toString() ?? "N/A";
+    final windSpeed = currentWeather['windspeed']?.toString() ?? "N/A";
+    final tempMax = dailyWeather['temperature_2m_max']?[0]?.toString() ?? "N/A";
+    final tempMin = dailyWeather['temperature_2m_min']?[0]?.toString() ?? "N/A";
+    final feelsLike = hourlyWeather['apparent_temperature']?[0]?.toString() ?? "N/A";
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('$cityName 날씨 정보'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(mapWeatherCodeToIcon(currentWeather['weathercode'] ?? -1), size: 48),
+              SizedBox(height: 8),
+              Text('현재 온도: $temperature°C', style: TextStyle(fontSize: 16)),
+              Text('최고 온도: $tempMax°C', style: TextStyle(fontSize: 16)),
+              Text('최저 온도: $tempMin°C', style: TextStyle(fontSize: 16)),
+              Text('체감온도: $feelsLike°C', style: TextStyle(fontSize: 16)),
+              Text('풍속: $windSpeed km/h', style: TextStyle(fontSize: 16)),
+            ],
+          ),
+          actions: [
+            TextButton(
+              child: Text('닫기'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('날씨 조회'),
-        actions: [
-          IconButton(onPressed: widget.signOut, icon: Icon(Icons.logout))
-        ],
-      ),
-      body: ListView.builder(
-        itemCount: provinces.length,
-        itemBuilder: (context, index) {
-          final province = provinces[index];
-          return ListTile(
-            title: Text(province['name']),
-            trailing: IconButton(
-              icon: Icon(
-                favoriteCities.contains(province['name'])
-                    ? Icons.favorite
-                    : Icons.favorite_border,
-                color: favoriteCities.contains(province['name'])
-                    ? Colors.red
-                    : null,
-              ),
-              onPressed: () {
-                setState(() {
-                  if (favoriteCities.contains(province['name'])) {
-                    favoriteCities.remove(province['name']);
-                  } else {
-                    favoriteCities.add(province['name']);
-                  }
-                });
-              },
-            ),
-            onTap: () async {
-              final weatherData = await fetchWeather(
-                  province['lat'], province['lon']);
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    title: Text('${province['name']} 날씨'),
-                    content: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                            '온도: ${weatherData['current_weather']['temperature']}°C'),
-                        Text(
-                            '풍속: ${weatherData['current_weather']['windspeed']} km/h'),
-                        Text(
-                            '날씨 상태: ${weatherData['current_weather']['weathercode']}'),
-                      ],
+      appBar: AppBar(title: Text('날씨 정보')),
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: GridView.builder(
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 8,
+            mainAxisSpacing: 8,
+            childAspectRatio: 3 / 2,
+          ),
+          itemCount: provinces.length,
+          itemBuilder: (context, index) {
+            final province = provinces[index];
+            return FutureBuilder<Map<String, dynamic>>(
+              future: fetchWeather(province['lat'], province['lon']),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Card(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.0),
                     ),
-                    actions: [
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                        child: Text('닫기'),
-                      ),
-                    ],
+                    elevation: 4.0,
+                    child: Center(child: CircularProgressIndicator()),
                   );
-                },
-              );
-            },
-          );
-        },
+                } else if (snapshot.hasError) {
+                  return Card(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.0),
+                    ),
+                    elevation: 4.0,
+                    child: Center(child: Text("${province['name']}\n오류 발생")),
+                  );
+                } else {
+                  final weatherData = snapshot.data!;
+                  final currentWeather = weatherData['current_weather'] ?? {};
+                  return GestureDetector(
+                    onTap: () {
+                      showWeatherDialog(context, province['name'], weatherData);
+                    },
+                    child: Card(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                      ),
+                      elevation: 4.0,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              mapWeatherCodeToIcon(currentWeather['weathercode'] ?? -1),
+                              size: 36,
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              province['name'],
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              '${currentWeather['temperature']?.toString() ?? "N/A"}°C',
+                              style: TextStyle(fontSize: 14),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                }
+              },
+            );
+          },
+        ),
       ),
     );
   }
