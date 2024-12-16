@@ -211,7 +211,6 @@ class _AuthWidgetState extends State<AuthWidget> {
 }
 
 class WeatherHomeScreen extends StatefulWidget {
-
   @override
   _WeatherHomeScreenState createState() => _WeatherHomeScreenState();
 }
@@ -229,7 +228,6 @@ class _WeatherHomeScreenState extends State<WeatherHomeScreen> {
     {'name': '제주', 'lat': 33.4996, 'lon': 126.5312},
     {'name': '독도', 'lat': 37.239, 'lon': 131.865},
   ];
-
 
   Future<Map<String, dynamic>> fetchWeather(double lat, double lon) async {
     final url = Uri.parse(
@@ -295,10 +293,26 @@ class _WeatherHomeScreenState extends State<WeatherHomeScreen> {
     );
   }
 
+  Future<void> signOut() async {
+    await FirebaseAuth.instance.signOut();
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (context) => AuthWidget()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('날씨 정보')),
+      appBar: AppBar(
+        title: Text('날씨 정보'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.logout),
+            onPressed: signOut,
+            tooltip: "로그아웃",
+          ),
+        ],
+      ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: GridView.builder(
