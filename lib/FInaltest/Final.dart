@@ -241,6 +241,16 @@ class _WeatherHomeScreenState extends State<WeatherHomeScreen> {
     }
   }
 
+  Color mapWeatherCodeToColor(int code) {
+    if (code == 0) return Colors.yellowAccent[100]!; // 맑음
+    if (code <= 3) return Colors.grey[300]!; // 구름
+    if (code <= 48) return Colors.lightBlueAccent[500]!; // 안개
+    if (code <= 57) return Colors.blueGrey[200]!; // 이슬비
+    if (code <= 67) return Colors.blue[400]!; // 비
+    if (code <= 77) return Colors.lightBlue[200]!; // 눈
+    return Colors.grey[200]!; // 알 수 없음
+  }
+
   IconData mapWeatherCodeToIcon(int code) {
     if (code == 0) return Icons.wb_sunny; // 맑음
     if (code <= 3) return Icons.cloud; // 구름
@@ -271,8 +281,6 @@ class _WeatherHomeScreenState extends State<WeatherHomeScreen> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(mapWeatherCodeToIcon(currentWeather['weathercode'] ?? -1), size: 48),
-              SizedBox(height: 8),
               Text('현재 온도: $temperature°C', style: TextStyle(fontSize: 16)),
               Text('최고 온도: $tempMax°C', style: TextStyle(fontSize: 16)),
               Text('최저 온도: $tempMin°C', style: TextStyle(fontSize: 16)),
@@ -347,11 +355,15 @@ class _WeatherHomeScreenState extends State<WeatherHomeScreen> {
                 } else {
                   final weatherData = snapshot.data!;
                   final currentWeather = weatherData['current_weather'] ?? {};
+                  final weatherCode = currentWeather['weathercode'] ?? -1;
+                  final bgColor = mapWeatherCodeToColor(weatherCode);
+
                   return GestureDetector(
                     onTap: () {
                       showWeatherDialog(context, province['name'], weatherData);
                     },
                     child: Card(
+                      color: bgColor,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12.0),
                       ),
@@ -362,8 +374,9 @@ class _WeatherHomeScreenState extends State<WeatherHomeScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
-                              mapWeatherCodeToIcon(currentWeather['weathercode'] ?? -1),
-                              size: 36,
+                              mapWeatherCodeToIcon(weatherCode),
+                              size: 36.0,
+                              color: Colors.black54,
                             ),
                             SizedBox(height: 8),
                             Text(
@@ -392,3 +405,5 @@ class _WeatherHomeScreenState extends State<WeatherHomeScreen> {
     );
   }
 }
+
+
