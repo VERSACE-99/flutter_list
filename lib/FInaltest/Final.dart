@@ -1,4 +1,4 @@
-import 'package:firebase_auth/firebase_auth.dart'; // Firebase 인증 라이브러리 import
+import 'package:firebase_auth/firebase_auth.dart'; // Firebase 인증 라이브러리
 import 'package:flutter/gestures.dart'; // TextSpan의 클릭 이벤트 처리를 위한 패키지
 import 'package:flutter/material.dart'; // Flutter의 UI 관련 위젯 라이브러리
 import 'package:firebase_core/firebase_core.dart'; // Firebase 초기화를 위한 라이브러리
@@ -261,39 +261,58 @@ class _WeatherHomeScreenState extends State<WeatherHomeScreen> { // WeatherHomeS
     return Icons.help_outline; // 알 수 없음
   }
 
-  void showWeatherDialog( // 날씨 정보를 보여주는 다이얼로그
+  void showWeatherDialog(
       BuildContext context, String cityName, Map<String, dynamic> weatherData) {
-    final currentWeather = weatherData['current_weather'] ?? {}; // 현재 날씨 정보
-    final dailyWeather = weatherData['daily'] ?? {}; // 일별 날씨 정보
-    final hourlyWeather = weatherData['hourly'] ?? {}; // 시간별 날씨 정보
+    // 현재 날씨 데이터를 가져옵니다. (current_weather가 없으면 빈 값 사용)
+    final currentWeather = weatherData['current_weather'] ?? {};
+    // 일별 날씨 데이터를 가져옵니다. (daily가 없으면 빈 값 사용)
+    final dailyWeather = weatherData['daily'] ?? {};
 
-    // 데이터가 제공되지 않을 경우 N/A로 표시
-    final temperature = currentWeather['temperature']?.toString() ?? "N/A"; // 현재 온도
-    final windSpeed = currentWeather['windspeed']?.toString() ?? "N/A"; // 풍속
-    final tempMax = dailyWeather['temperature_2m_max']?[0]?.toString() ?? "N/A"; // 최고 온도
-    final tempMin = dailyWeather['temperature_2m_min']?[0]?.toString() ?? "N/A"; // 최저 온도
-    final feelsLike = hourlyWeather['apparent_temperature']?[0]?.toString() ?? "N/A"; // 체감 온도
+    // 현재 날씨 정보
+    final temperature = currentWeather['temperature']?.toString() ?? "N/A"; // 현재 온도 가져오기
+    final windSpeed = currentWeather['windspeed']?.toString() ?? "N/A"; // 현재 풍속 가져오기
 
-    showDialog( // 다이얼로그 띄우기
+    // 오늘의 최고 온도와 최저 온도 가져오기
+    final todayTempMax = dailyWeather['temperature_2m_max']?[0]?.toString() ?? "N/A";
+    final todayTempMin = dailyWeather['temperature_2m_min']?[0]?.toString() ?? "N/A";
+
+    // 내일의 최고 온도와 최저 온도 가져오기
+    final tomorrowTempMax = dailyWeather['temperature_2m_max']?[1]?.toString() ?? "N/A";
+    final tomorrowTempMin = dailyWeather['temperature_2m_min']?[1]?.toString() ?? "N/A";
+
+    // 다이얼로그(팝업창)화면
+    showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('$cityName 날씨 정보'), // 다이얼로그 제목
+          title: Text('$cityName 날씨 정보'), // 팝업창 제목에 도시 이름을 표시
           content: Column(
-            mainAxisSize: MainAxisSize.min, // 다이얼로그 내 콘텐츠 크기 설정
+            mainAxisSize: MainAxisSize.min, // 팝업창 내용이 너무 길지 않도록 최소 크기로 설정
+            crossAxisAlignment: CrossAxisAlignment.start, // 내용을 왼쪽 정렬로 배치
             children: [
-              Text('현재 온도: $temperature°C', style: TextStyle(fontSize: 16)), // 현재 온도 표시
-              Text('최고 온도: $tempMax°C', style: TextStyle(fontSize: 16)), // 최고 온도 표시
-              Text('최저 온도: $tempMin°C', style: TextStyle(fontSize: 16)), // 최저 온도 표시
-              Text('체감온도: $feelsLike°C', style: TextStyle(fontSize: 16)), // 체감 온도 표시
-              Text('풍속: $windSpeed km/h', style: TextStyle(fontSize: 16)), // 풍속 표시
+              // 현재 온도와 풍속을 표시합니다.
+              Text('현재 온도: $temperature°C', style: TextStyle(fontSize: 16)),
+              Text('풍속: $windSpeed km/h', style: TextStyle(fontSize: 16)),
+              Divider(), // 구분선 추가
+
+              // 오늘의 최고 온도와 최저 온도를 표시
+              Text('오늘 최고 온도: $todayTempMax°C', style: TextStyle(fontSize: 16)),
+              Text('오늘 최저 온도: $todayTempMin°C', style: TextStyle(fontSize: 16)),
+              Divider(), // 구분선 추가
+
+              // 내일의 최고 온도와 최저 온도를 강조해서 표시
+              Text('내일 최고 온도: $tomorrowTempMax°C',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              Text('내일 최저 온도: $tomorrowTempMin°C',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             ],
           ),
           actions: [
+            // 팝업창 닫기 버튼
             TextButton(
-              child: Text('닫기'), // '닫기' 버튼
+              child: Text('닫기'), // 버튼 이름: '닫기'
               onPressed: () {
-                Navigator.of(context).pop(); // 다이얼로그 닫기
+                Navigator.of(context).pop(); // 버튼을 누르면 팝업창을 닫음
               },
             ),
           ],
