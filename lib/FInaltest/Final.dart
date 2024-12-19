@@ -227,11 +227,18 @@ class _WeatherHomeScreenState extends State<WeatherHomeScreen> { // WeatherHomeS
     {'name': '세종', 'lat': 36.4800, 'lon': 127.2890}, // 세종
     {'name': '제주', 'lat': 33.4996, 'lon': 126.5312}, // 제주
     {'name': '독도', 'lat': 37.239, 'lon': 131.865}, // 독도
+    {'name': '오사카', 'lat': 34.6937, 'lon': 135.5023}, // 오사카
+    {'name': '런던', 'lat': 51.5074, 'lon': 0.1278}, // 독도
+    {'name': '뉴욕', 'lat': 40.7128, 'lon': 74.0060}, // 독도
+    {'name': '두바이', 'lat': 25.276987, 'lon': 55.296249}, // 독도
   ];
 
-  Future<Map<String, dynamic>> fetchWeather(double lat, double lon) async { // 날씨 데이터를 가져오는 비동기 함수
+  // 날씨 데이터를 가져오는 비동기 함수
+  Future<Map<String, dynamic>> fetchWeather(double lat, double lon) async {
     final url = Uri.parse(
-        '$openMeteoApiUrl?latitude=$lat&longitude=$lon&current_weather=true&daily=temperature_2m_max,temperature_2m_min&hourly=apparent_temperature&timezone=auto'); // API URL 구성
+        '$openMeteoApiUrl?latitude=$lat&longitude=$lon&current_weather=true&daily='
+            'temperature_2m_max,''temperature_2m_min&hourly=apparent_'
+            'temperature&timezone=auto'); // API URL 구성
     final response = await http.get(url); // API 호출
 
     if (response.statusCode == 200) { // 응답 성공
